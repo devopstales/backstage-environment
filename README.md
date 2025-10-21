@@ -95,13 +95,14 @@ yarn start
 ### Build the container image
 1. In your application directory, build your application
 ```
-yarn install --frozen-lockfile
+yarn install --immutable
 yarn tsc
 yarn build:backend
 ```
 2. Build the image
 ```
-docker image build . -f packages/backend/Dockerfile --tag backstage:1.0.0
+docker image build . -f packages/backend/Dockerfile --tag devopstales/backstage:1.44.0-base
+docker push devopstales/backstage:1.44.0-base
 ```
 
 <br>
@@ -112,7 +113,7 @@ docker image build . -f packages/backend/Dockerfile --tag backstage:1.0.0
 This example is for Kind cluster, you can import the image to your docker repository
 
 ```
-kind load docker-image backstage:1.0.0 --name local-single-node
+kind load docker-image devopstales/backstage:1.44.0-base --name local-single-node
 ```
 
 <br>
