@@ -63,10 +63,16 @@ techdocs:
     type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
 
 auth:
-  # see https://backstage.io/docs/auth/ to learn about auth providers
+  environment: development
+  session:
+    secret: s3cr3t
   providers:
-    # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    keycloak:
+      development:
+        metadataUrl: ${KEYCLOAK_URL}/realms/${KEYCLOAK_CLIENT_REALM}/.well-known/openid-configuration
+        clientId: ${KEYCLOAK_CLIENT_ID}
+        clientSecret: ${KEYCLOAK_CLIENT_SECRET}
+        prompt: auto
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options

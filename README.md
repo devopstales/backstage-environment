@@ -103,6 +103,8 @@ yarn build:backend
 ```
 docker image build . -f packages/backend/Dockerfile --tag devopstales/backstage:1.44.0-base
 docker push devopstales/backstage:1.44.0-base
+
+docker run -it -p 7007:7007 backstage
 ```
 
 <br>

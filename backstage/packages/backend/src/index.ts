@@ -7,8 +7,55 @@
  */
 
 import { createBackend } from '@backstage/backend-defaults';
+// Custom import
+import { createBackendModule } from '@backstage/backend-plugin-api';
+import {
+  authProvidersExtensionPoint,
+  createOAuthProviderFactory,
+} from '@backstage/plugin-auth-node';
+import { oidcAuthenticator } from '@backstage/plugin-auth-backend-module-oidc-provider';
+import { DEFAULT_NAMESPACE, stringifyEntityRef } from '@backstage/catalog-model';
 
 const backend = createBackend();
+
+// Custom config
+const kcAuthProvider = createBackendModule({
+  // This ID must be exactly "auth" because that's the plugin it targets
+  pluginId: 'auth',
+  // This ID must be unique, but can be anything
+  moduleId: 'keycloak',
+  register(reg) {
+    reg.registerInit({
+      deps: { providers: authProvidersExtensionPoint },
+      async init({ providers }) {
+        providers.registerProvider({
+          // This ID must match the actual provider config, e.g. addressing
+          // auth.providers.azure means that this must be "azure".
+          providerId: 'keycloak',
+          // Use createProxyAuthProviderFactory instead if it's one of the proxy
+          // based providers rather than an OAuth based one
+          factory: createOAuthProviderFactory({
+            // For more info about authenticators please see https://backstage.io/docs/auth/add-auth-provider/#adding-an-oauth-based-provider
+            authenticator: oidcAuthenticator,
+            async signInResolver(info, ctx) {
+              const userRef: any = stringifyEntityRef({
+                kind: 'User',
+                name: info?.result.fullProfile.userinfo.name as string,
+                namespace: DEFAULT_NAMESPACE
+              });
+              return ctx.issueToken({
+                claims: {
+                  sub: userRef, // The user's own identity
+                  ent: [userRef], // A list of identities that the user claims ownership through
+                },
+              });
+            },
+          }),
+        });
+      },
+    });
+  },
+});
 
 backend.add(import('@backstage/plugin-app-backend'));
 backend.add(import('@backstage/plugin-proxy-backend'));
@@ -26,7 +73,7 @@ backend.add(import('@backstage/plugin-techdocs-backend'));
 // auth plugin
 backend.add(import('@backstage/plugin-auth-backend'));
 // See https://backstage.io/docs/backend-system/building-backends/migrating#the-auth-plugin
-backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
+// backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
 // See https://backstage.io/docs/auth/guest/provider
 
 // catalog plugin
@@ -62,5 +109,8 @@ backend.add(import('@backstage/plugin-kubernetes-backend'));
 // notifications and signals plugins
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
+
+// Custom add
+backend.add(kcAuthProvider);
 
 backend.start();
