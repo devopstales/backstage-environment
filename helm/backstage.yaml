@@ -1,0 +1,39 @@
+backstage:
+  image:
+    registry: "docker.io"
+    repository: "devopstales/backstage"
+    tag: "1.44.1"
+  appConfig:
+    app:
+      baseUrl: https://backstage.cl01.shiwaforce.com
+    client: pg
+    connection:
+      host: postgres
+      port: 5432
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+    auth:
+      environment: productions
+      session:
+        secret: ${BACKSTAGE_SECRET}
+      providers:
+        keycloak:
+          productions:
+            metadataUrl: ${KEYCLOAK_URL}/realms/${KEYCLOAK_CLIENT_REALM}/.well-known/openid-configuration
+            clientId: ${KEYCLOAK_CLIENT_ID}
+            clientSecret: ${KEYCLOAK_CLIENT_SECRET}
+            prompt: auto
+  extraEnvVarsSecrets:
+    - postgres-secrets
+    - backstage-secrets
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns01
+  host: backstage.cl01.shiwaforce.com
+  tls:
+    enabled: true
+    secretName: backstage-ingress-tls
+metrics:
+  serviceMonitor:
+    enabled: true

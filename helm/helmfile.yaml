@@ -1,0 +1,10 @@
+repositories:
+ - name: backstage
+   url: https://backstage.github.io/charts
+
+releases:
+- name: backstage
+  namespace: backstage
+  chart: backstage/backstage
+  values:
+  - backstage.yaml
