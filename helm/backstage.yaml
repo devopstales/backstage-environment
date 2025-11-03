@@ -5,6 +5,9 @@ backstage:
     tag: "1.44.1"
   appConfig:
     app:
+      title: Backstage App
+      baseUrl: https://backstage.cl01.shiwaforce.com
+    backend:
       baseUrl: https://backstage.cl01.shiwaforce.com
     client: pg
     connection:
@@ -13,16 +16,33 @@ backstage:
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
     auth:
-      environment: productions
+      environment: production
       session:
         secret: ${BACKSTAGE_SECRET}
       providers:
         keycloak:
-          productions:
-            metadataUrl: ${KEYCLOAK_URL}/realms/${KEYCLOAK_CLIENT_REALM}/.well-known/openid-configuration
+          production:
+            metadataUrl: https://${KEYCLOAK_URL}/realms/${KEYCLOAK_CLIENT_REALM}/.well-known/openid-configuration
             clientId: ${KEYCLOAK_CLIENT_ID}
             clientSecret: ${KEYCLOAK_CLIENT_SECRET}
             prompt: auto
+    kubernetes:
+      serviceLocatorMethod:
+        type: 'multiTenant'
+      clusterLocatorMethods:
+        - type: 'config'
+          clusters:
+            - url: https://kubernetes.default.svc
+              name: k8s
+              authProvider: 'serviceAccount'
+              skipTLSVerify: false
+              skipMetricsLookup: true
+    techdocs:
+      builder: local
+      generator:
+        runIn: docker
+      publisher:
+        type: local
   extraEnvVarsSecrets:
     - postgres-secrets
     - backstage-secrets
